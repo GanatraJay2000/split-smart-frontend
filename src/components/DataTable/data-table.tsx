@@ -4,6 +4,7 @@ import * as React from "react";
 import {
   ColumnDef,
   ColumnFiltersState,
+  ColumnPinningState,
   SortingState,
   VisibilityState,
   flexRender,
@@ -27,19 +28,29 @@ import {
 
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
-import { useRouter } from "next/router";
-import { cn } from "@/lib/utils";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  options: {
+    searchCol: string;
+    pagination?: boolean;
+    pageSize?: {
+      default: boolean;
+      options: number[];
+    } | null;
+  };
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  options: {
+    searchCol,
+    pagination = true,
+    pageSize = { options: [10, 20, 30, 40, 50], default: true },
+  },
 }: DataTableProps<TData, TValue>) {
-  const router = useRouter();
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
@@ -47,6 +58,10 @@ export function DataTable<TData, TValue>({
     []
   );
   const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [columnPinning, setColumnPinning] = React.useState<ColumnPinningState>({
+    left: [],
+    right: ["actions"],
+  });
 
   const table = useReactTable({
     data,
@@ -56,15 +71,17 @@ export function DataTable<TData, TValue>({
       columnVisibility,
       rowSelection,
       columnFilters,
+      columnPinning,
     },
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
+    onColumnPinningChange: setColumnPinning,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    getPaginationRowModel: pagination ? getPaginationRowModel() : undefined,
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
@@ -72,7 +89,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-4">
-      <DataTableToolbar table={table} />
+      <DataTableToolbar table={table} options={{ searchCol }} />
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -133,7 +150,15 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <DataTablePagination table={table} />
+      <div className="flex items-center justify-between px-2">
+        <div className="flex-1 text-sm text-muted-foreground">
+          {table.getFilteredSelectedRowModel().rows.length} of{" "}
+          {table.getFilteredRowModel().rows.length} row(s) selected.
+        </div>
+        {pagination && (
+          <DataTablePagination table={table} pageSize={pageSize} />
+        )}
+      </div>
     </div>
   );
 }

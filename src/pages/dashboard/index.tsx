@@ -1,7 +1,10 @@
 import { UserNav } from "@/components/user-nav";
-import { tasks } from "@/lib/data/task";
+// import { users, groups } from "@/lib/data/users";
+import { orders } from "@/lib/data/orders";
 import { DataTable } from "@/components/DataTable/data-table";
-import { columns } from "@/components/DataTable/columns";
+// import { columns as userTable } from "@/components/DataTable/Columns/UsersTable";
+// import { columns as groupTable } from "@/components/DataTable/Columns/GroupsTable";
+import { columns as orderTable } from "@/components/DataTable/Columns/OrdersTable";
 
 export default function Dashboard() {
   return (
@@ -17,7 +20,39 @@ export default function Dashboard() {
           <UserNav />
         </div>
       </div>
-      <DataTable data={tasks} columns={columns} />
+      <div className="w-max">
+        <DataTable
+          data={orders[0].items}
+          columns={orderTable}
+          options={{
+            searchCol: "date",
+            pagination: true,
+          }}
+        />
+      </div>
     </div>
   );
+}
+
+{
+  /* <div className="w-2/5 mx-auto">
+        <DataTable
+          data={groups}
+          columns={groupTable}
+          options={{
+            searchCol: "name",
+            pagination: true,
+          }}
+        />
+      </div>
+      <div className="w-1/3 mx-auto">
+        <DataTable
+          data={users}
+          columns={userTable}
+          options={{
+            searchCol: "name",
+            pagination: true,
+          }}
+        />
+      </div> */
 }

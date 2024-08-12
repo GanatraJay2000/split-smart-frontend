@@ -67,3 +67,8 @@
     @apply bg-background text-foreground;
   }
 }
+
+
+tr td:last-child{
+  width: 0;
+ }
