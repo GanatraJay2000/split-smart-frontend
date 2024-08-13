@@ -6,8 +6,8 @@ import { Order } from "@/lib/types/dataTable/schema";
 import { DataTableColumnHeader } from "../data-table-column-header";
 import { DataTableRowActions } from "../data-table-row-actions";
 import { users } from "@/lib/data/users";
-import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { useState } from "react";
 
 export const columns: ColumnDef<Order["items"][number]>[] = [
   {
@@ -49,22 +49,55 @@ export const columns: ColumnDef<Order["items"][number]>[] = [
     },
   },
   {
+    accessorKey: "cost",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Cost" />
+    ),
+    enableHiding: false,
+    cell: ({ row }) => {
+      const amount = parseFloat(row.getValue("cost"));
+      const formatted = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+      }).format(amount);
+
+      return <div className="font-medium">{formatted}</div>;
+    },
+  },
+  {
     accessorKey: "users",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Users" />
     ),
     enableHiding: false,
-    cell: ({ row }) => {
+    cell: ({ row, table }) => {
+      const item_users = row.getValue("users") as number[];
+
       return (
         <div className="flex space-x-2">
-          <ToggleGroup type="multiple" className="gap-5">
+          <ToggleGroup
+            type="multiple"
+            className="gap-5"
+            variant="outline"
+            defaultValue={item_users.map(String)}
+            onValueChange={(value) => {
+              table.options.meta?.updateUsers(
+                row.index,
+                value.map(Number).sort()
+              );
+            }}
+          >
             {users.map((u, idx) => (
-              <ToggleGroupItem key={idx} value={u.id.toString()}>
+              <ToggleGroupItem
+                className="data-[state=on]:bg-secondary"
+                key={idx}
+                value={u.id.toString()}
+              >
                 {u.short}
               </ToggleGroupItem>
             ))}
           </ToggleGroup>
-          {/* {row.getValue("users") as number[]} */}
+          {/* { as number[]} */}
         </div>
       );
     },

@@ -5,6 +5,7 @@ import {
   ColumnDef,
   ColumnFiltersState,
   ColumnPinningState,
+  RowData,
   SortingState,
   VisibilityState,
   flexRender,
@@ -32,6 +33,7 @@ import { DataTableToolbar } from "./data-table-toolbar";
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  updateUsers?: any;
   options: {
     searchCol: string;
     pagination?: boolean;
@@ -42,9 +44,16 @@ interface DataTableProps<TData, TValue> {
   };
 }
 
+declare module "@tanstack/react-table" {
+  interface TableMeta<TData extends RowData> {
+    updateUsers: (rowIndex: number, users: number[]) => void;
+  }
+}
+
 export function DataTable<TData, TValue>({
   columns,
   data,
+  updateUsers = () => {},
   options: {
     searchCol,
     pagination = true,
@@ -85,6 +94,9 @@ export function DataTable<TData, TValue>({
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
+    meta: {
+      updateUsers,
+    },
   });
 
   return (
