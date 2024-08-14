@@ -34,6 +34,8 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   updateUsers?: any;
+  updateGroups?: any;
+  updateExtras?: any;
   options: {
     searchCol: string;
     pagination?: boolean;
@@ -47,6 +49,8 @@ interface DataTableProps<TData, TValue> {
 declare module "@tanstack/react-table" {
   interface TableMeta<TData extends RowData> {
     updateUsers: (rowIndex: number, users: number[]) => void;
+    updateGroups: (rowIndex: number, groups: number[]) => void;
+    updateExtras: (rowIndex: number, extras: number[]) => void;
   }
 }
 
@@ -54,6 +58,8 @@ export function DataTable<TData, TValue>({
   columns,
   data,
   updateUsers = () => {},
+  updateGroups = () => {},
+  updateExtras = () => {},
   options: {
     searchCol,
     pagination = true,
@@ -96,6 +102,8 @@ export function DataTable<TData, TValue>({
     getFacetedUniqueValues: getFacetedUniqueValues(),
     meta: {
       updateUsers,
+      updateGroups,
+      updateExtras,
     },
   });
 

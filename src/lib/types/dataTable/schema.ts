@@ -23,7 +23,10 @@ export const orderSchema = z.object({
   items: z.array(
     z.object({
       name: z.string(),
+      cost: z.number(),
       users: z.array(z.number()),
+      groups: z.array(z.number()),
+      extras: z.array(z.number()),
     })
   ),
 });
