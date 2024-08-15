@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { orders as ordersData } from "@/lib/data/orders";
-import { groups, users } from "@/lib/data/users";
+import { users } from "@/lib/data/users";
+import { groups } from "@/lib/data/groups";
 
 import { columns as specificOrderTable } from "@/components/DataTable/Columns/SpecificOrderTable";
 import { DataTable } from "@/components/DataTable/data-table";
-import SpecificOrderModal from "@/components/DataTable/Modals/SpecificOrderModal";
 import { UserNav } from "@/components/user-nav";
 
 import {
@@ -21,6 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Row } from "@tanstack/react-table";
 import { Order as OrderSchema } from "@/lib/types/dataTable/schema";
+import Inner from "@/components/Inner";
 
 export default function Order() {
   const [order, setOrder] = useState(ordersData[0].items);
@@ -124,18 +125,7 @@ export default function Order() {
   };
 
   return (
-    <div className="h-full flex-1 flex-col space-y-8 p-8 flex md:w-11/12 mx-auto">
-      <div className="flex items-center justify-between space-y-2">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Welcome back!</h2>
-          <p className="text-muted-foreground">
-            Here&apos;s a list of your recent payments!
-          </p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <UserNav />
-        </div>
-      </div>
+    <Inner>
       <div className="flex gap-10">
         <div className="grow">
           <DataTable
@@ -150,8 +140,7 @@ export default function Order() {
               updateGroups,
               updateExtras,
               deleteRow,
-              editModal: (row: Row<OrderSchema["items"][number]>) =>
-                SpecificOrderModal({ row, editRow }),
+              editRow,
             }}
           />
         </div>
@@ -200,6 +189,6 @@ export default function Order() {
       >
         Publish
       </Button>
-    </div>
+    </Inner>
   );
 }

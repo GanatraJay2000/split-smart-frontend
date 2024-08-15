@@ -28,8 +28,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { DataTablePagination } from "./data-table-pagination";
-import { DataTableToolbar } from "./data-table-toolbar";
+import { DataTablePagination } from "./data-table/data-table-pagination";
+import { DataTableToolbar } from "./data-table/data-table-toolbar";
 
 declare module "@tanstack/react-table" {
   interface TableMeta<TData extends RowData> {
@@ -38,7 +38,7 @@ declare module "@tanstack/react-table" {
       updateGroups?: (rowIndex: number, groups: number[]) => void;
       updateExtras?: (rowIndex: number, extras: number[]) => void;
       deleteRow: (rowIndex: number) => void;
-      editModal: (row: Row<TData>) => React.ReactNode;
+      editRow: (rowIndex: number, data: Partial<TData>) => void;
     };
   }
 }
@@ -51,7 +51,7 @@ interface DataTableProps<TData, TValue> {
     updateGroups?: any;
     updateExtras?: any;
     deleteRow?: any;
-    editModal?: any;
+    editRow?: any;
   };
   options: {
     searchCol: string;
@@ -71,7 +71,7 @@ export function DataTable<TData, TValue>({
     updateGroups = () => {},
     updateExtras = () => {},
     deleteRow = () => {},
-    editModal,
+    editRow = () => {},
   } = {},
   options: {
     searchCol,
@@ -119,12 +119,10 @@ export function DataTable<TData, TValue>({
         updateGroups,
         updateExtras,
         deleteRow,
-        editModal,
+        editRow,
       },
     },
   });
-
-  console.log(table.getFilteredSelectedRowModel().rows);
 
   return (
     <div className="space-y-4">
@@ -157,17 +155,7 @@ export function DataTable<TData, TValue>({
                   data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                      // className={cn("", {
-                      //   "cursor-pointer": cell.column.id == "title",
-                      // })}
-                      // onClick={() => {
-                      //   if (cell.column.id == "title") {
-                      //     router.push("/auth/login");
-                      //   }
-                      // }}
-                    >
+                    <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()

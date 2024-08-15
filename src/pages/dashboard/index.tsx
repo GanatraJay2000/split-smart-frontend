@@ -1,19 +1,22 @@
-import { UserNav } from "@/components/user-nav";
+import { orders } from "@/lib/data/orders";
+import { orderColumns } from "@/components/DataTable/Columns/OrdersTable";
+import { DataTable } from "@/components/DataTable/data-table";
+import Inner from "@/components/Inner";
 
 export default function Dashboard() {
   return (
-    <div className="h-full flex-1 flex-col space-y-8 p-8 flex md:w-8/12 mx-auto">
-      <div className="flex items-center justify-between space-y-2">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Welcome back!</h2>
-          <p className="text-muted-foreground">
-            Here&apos;s a list of your recent payments!
-          </p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <UserNav />
-        </div>
+    <Inner>
+      <div className="md:w-4/5 lg:w-3/5 xl:w-2/5 mx-auto mt-10">
+        <DataTable
+          data={orders}
+          columns={orderColumns}
+          options={{
+            searchCol: "name",
+            pagination: true,
+          }}
+          tableAcitons={{}}
+        />
       </div>
-    </div>
+    </Inner>
   );
 }

@@ -1,37 +1,14 @@
 import { ColumnDef } from "@tanstack/react-table";
 
-import { Checkbox } from "@/components/ui/checkbox";
+import { DataTableColumnHeader } from "../data-table/data-table-column-header";
+import { DataTableRowActions } from "../data-table/data-table-row-actions";
 
-import { Group } from "@/lib/types/dataTable/schema";
-import { DataTableColumnHeader } from "../data-table-column-header";
-import { DataTableRowActions } from "../data-table-row-actions";
-import { groupTypes } from "@/lib/data/users";
+import { GroupWithUsers, User } from "@/lib/types/dataTable/schema";
 
-export const columns: ColumnDef<Group>[] = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-        className="translate-y-[2px]"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-        className="translate-y-[2px]"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import GroupsModal from "../Modals/GroupsModal";
+
+export const groupColumns: ColumnDef<GroupWithUsers>[] = [
   {
     accessorKey: "name",
 
@@ -52,19 +29,20 @@ export const columns: ColumnDef<Group>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Users" />
     ),
+    enableSorting: false,
     enableHiding: false,
     cell: ({ row }) => {
+      const users: User[] = row.getValue("users") ?? [];
       return (
         <div className="flex space-x-2">
-          <span className="truncate font-medium">
-            {(row.getValue("users") as groupTypes)
-              ?.map((a) =>
-                a.name
-                  .split(" ")
-                  .map((b) => b[0].toUpperCase())
-                  .join("")
-              )
-              .join(", ")}
+          <span className="truncate font-medium flex gap-1">
+            {users.map((user, idx) => (
+              <Avatar key={idx} className="text-xs">
+                <AvatarFallback className="py-1 !px-5">
+                  {user.short}
+                </AvatarFallback>
+              </Avatar>
+            ))}
           </span>
         </div>
       );
@@ -73,6 +51,8 @@ export const columns: ColumnDef<Group>[] = [
   {
     id: "actions",
     enablePinning: true,
-    cell: ({ row }) => <DataTableRowActions row={row} />,
+    cell: ({ row, table }) => (
+      <DataTableRowActions row={row} table={table} Modal={GroupsModal} />
+    ),
   },
 ];

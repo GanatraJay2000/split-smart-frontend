@@ -1,17 +1,17 @@
-import { DataTableColumnHeader } from "../data-table-column-header";
+import { DataTableColumnHeader } from "../data-table/data-table-column-header";
 
 import { ColumnDef } from "@tanstack/react-table";
 import { Minus, Plus } from "lucide-react";
 import { RxDotsHorizontal } from "react-icons/rx";
 
 import { Order } from "@/lib/types/dataTable/schema";
-import { groups, users } from "@/lib/data/users";
+import { users } from "@/lib/data/users";
+import { groups } from "@/lib/data/groups";
 import { cn } from "@/lib/utils";
 
 import {
   ContextMenu,
   ContextMenuContent,
-  ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import {
@@ -23,18 +23,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { useState } from "react";
+import { DataTableRowActions } from "../data-table/data-table-row-actions";
+import SpecificOrderModal from "../Modals/SpecificOrderModal";
 
 export const columns: ColumnDef<Order["items"][number]>[] = [
   {
@@ -218,31 +208,8 @@ export const columns: ColumnDef<Order["items"][number]>[] = [
   {
     id: "actions",
     enablePinning: true,
-    cell: function useCell({ row, table }) {
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
-            >
-              <RxDotsHorizontal className="h-4 w-4" />
-              <span className="sr-only">Open menu</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-[160px]">
-            {table.options.meta?.tableActions?.editModal(row)}
-
-            <DropdownMenuItem
-              onClick={() => {
-                table.options.meta?.tableActions?.deleteRow?.(row.index);
-              }}
-            >
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
-    },
+    cell: ({ row, table }) => (
+      <DataTableRowActions row={row} table={table} Modal={SpecificOrderModal} />
+    ),
   },
 ];

@@ -1,13 +1,9 @@
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
   DialogClose,
-  DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -18,41 +14,40 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Order } from "@/lib/types/dataTable/schema";
-import { cn } from "@/lib/utils";
+import { User } from "@/lib/types/dataTable/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Row } from "@tanstack/react-table";
 import { Dispatch, SetStateAction } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { set, z } from "zod";
 
-export const specificOrderFormSchema = z.object({
+export const groupsFormSchema = z.object({
   name: z.string().min(2, {
     message: "Name must be at least 2 characters.",
   }),
-  cost: z.coerce.number().min(2, {
-    message: "Cost must be greater than 0.",
+  short: z.string().min(2, {
+    message: "Short must be at least 2 characters.",
   }),
 });
 
-export default function SpecificOrderModal({
+export default function UsersModal({
   row,
   editRow,
   setDialogOpen,
 }: {
-  row: Row<Order["items"][number]>;
-  editRow: (rowIndex: number, data: Partial<Order["items"][number]>) => void;
+  row: Row<User>;
+  editRow: (rowIndex: number, data: Partial<User>) => void;
   setDialogOpen: Dispatch<SetStateAction<boolean>>;
 }) {
-  const form = useForm<z.infer<typeof specificOrderFormSchema>>({
-    resolver: zodResolver(specificOrderFormSchema),
+  const form = useForm<z.infer<typeof groupsFormSchema>>({
+    resolver: zodResolver(groupsFormSchema),
     defaultValues: {
       name: row.getValue("name"),
-      cost: row.getValue("cost"),
+      short: row.original.short,
     },
   });
 
-  function onSubmit(values: z.infer<typeof specificOrderFormSchema>) {
+  function onSubmit(values: z.infer<typeof groupsFormSchema>) {
     setDialogOpen(false);
     editRow(row.index, values);
   }
@@ -80,12 +75,12 @@ export default function SpecificOrderModal({
           />
           <FormField
             control={form.control}
-            name="cost"
+            name="short"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Cost</FormLabel>
+                <FormLabel>Short</FormLabel>
                 <FormControl>
-                  <Input type="number" {...field} />
+                  <Input {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
