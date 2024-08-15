@@ -1,21 +1,40 @@
-import { ColumnDef } from "@tanstack/react-table";
+import { DataTableColumnHeader } from "../data-table-column-header";
 
-import { Checkbox } from "@/components/ui/checkbox";
+import { ColumnDef } from "@tanstack/react-table";
+import { Minus, Plus } from "lucide-react";
+import { RxDotsHorizontal } from "react-icons/rx";
 
 import { Order } from "@/lib/types/dataTable/schema";
-import { DataTableColumnHeader } from "../data-table-column-header";
-import { DataTableRowActions } from "../data-table-row-actions";
 import { groups, users } from "@/lib/data/users";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { cn } from "@/lib/utils";
+
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Minus, Plus } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { useState } from "react";
 
 export const columns: ColumnDef<Order["items"][number]>[] = [
   {
@@ -86,12 +105,12 @@ export const columns: ColumnDef<Order["items"][number]>[] = [
         <div className="">
           <ToggleGroup
             type="multiple"
-            className="gap-2"
+            className="gap-2 justify-start"
             variant="outline"
             value={item_groups.map(String)}
             defaultValue={item_groups.map(String)}
             onValueChange={(value) => {
-              table.options.meta?.updateGroups(
+              table.options.meta?.tableActions?.updateGroups?.(
                 row.index,
                 value.map(Number).sort()
               );
@@ -126,12 +145,12 @@ export const columns: ColumnDef<Order["items"][number]>[] = [
           {item_users && (
             <ToggleGroup
               type="multiple"
-              className="gap-2"
+              className="gap-2 justify-start"
               variant="outline"
               defaultValue={item_users.map(String)}
               value={item_users.map(String)}
               onValueChange={(value) => {
-                table.options.meta?.updateUsers(
+                table.options.meta?.tableActions?.updateUsers?.(
                   row.index,
                   value.map(Number).sort()
                 );
@@ -161,9 +180,10 @@ export const columns: ColumnDef<Order["items"][number]>[] = [
                           onClick={() => {
                             const idx = extras.indexOf(u.id);
                             if (idx > -1) extras.splice(idx, 1);
-                            table.options.meta?.updateExtras(row.index, [
-                              ...extras,
-                            ]);
+                            table.options.meta?.tableActions?.updateExtras?.(
+                              row.index,
+                              [...extras]
+                            );
                           }}
                         >
                           <Minus className="h-4 w-4" />
@@ -175,10 +195,10 @@ export const columns: ColumnDef<Order["items"][number]>[] = [
                           size="icon"
                           className="h-8 w-8 shrink-0 "
                           onClick={() => {
-                            table.options.meta?.updateExtras(row.index, [
-                              ...extras,
-                              u.id,
-                            ]);
+                            table.options.meta?.tableActions?.updateExtras?.(
+                              row.index,
+                              [...extras, u.id]
+                            );
                           }}
                         >
                           <Plus className="h-4 w-4" />
@@ -191,7 +211,6 @@ export const columns: ColumnDef<Order["items"][number]>[] = [
               })}
             </ToggleGroup>
           )}
-          {/* { as number[]} */}
         </div>
       );
     },
@@ -199,6 +218,31 @@ export const columns: ColumnDef<Order["items"][number]>[] = [
   {
     id: "actions",
     enablePinning: true,
-    cell: ({ row }) => <DataTableRowActions row={row} />,
+    cell: function useCell({ row, table }) {
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
+            >
+              <RxDotsHorizontal className="h-4 w-4" />
+              <span className="sr-only">Open menu</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-[160px]">
+            {table.options.meta?.tableActions?.editModal(row)}
+
+            <DropdownMenuItem
+              onClick={() => {
+                table.options.meta?.tableActions?.deleteRow?.(row.index);
+              }}
+            >
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    },
   },
 ];

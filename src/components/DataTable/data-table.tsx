@@ -5,6 +5,7 @@ import {
   ColumnDef,
   ColumnFiltersState,
   ColumnPinningState,
+  Row,
   RowData,
   SortingState,
   VisibilityState,
@@ -30,12 +31,28 @@ import {
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
 
+declare module "@tanstack/react-table" {
+  interface TableMeta<TData extends RowData> {
+    tableActions?: {
+      updateUsers?: (rowIndex: number, users: number[]) => void;
+      updateGroups?: (rowIndex: number, groups: number[]) => void;
+      updateExtras?: (rowIndex: number, extras: number[]) => void;
+      deleteRow: (rowIndex: number) => void;
+      editModal: (row: Row<TData>) => React.ReactNode;
+    };
+  }
+}
+
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
-  updateUsers?: any;
-  updateGroups?: any;
-  updateExtras?: any;
+  tableAcitons?: {
+    updateUsers?: any;
+    updateGroups?: any;
+    updateExtras?: any;
+    deleteRow?: any;
+    editModal?: any;
+  };
   options: {
     searchCol: string;
     pagination?: boolean;
@@ -46,20 +63,16 @@ interface DataTableProps<TData, TValue> {
   };
 }
 
-declare module "@tanstack/react-table" {
-  interface TableMeta<TData extends RowData> {
-    updateUsers: (rowIndex: number, users: number[]) => void;
-    updateGroups: (rowIndex: number, groups: number[]) => void;
-    updateExtras: (rowIndex: number, extras: number[]) => void;
-  }
-}
-
 export function DataTable<TData, TValue>({
   columns,
   data,
-  updateUsers = () => {},
-  updateGroups = () => {},
-  updateExtras = () => {},
+  tableAcitons: {
+    updateUsers = () => {},
+    updateGroups = () => {},
+    updateExtras = () => {},
+    deleteRow = () => {},
+    editModal,
+  } = {},
   options: {
     searchCol,
     pagination = true,
@@ -101,11 +114,17 @@ export function DataTable<TData, TValue>({
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
     meta: {
-      updateUsers,
-      updateGroups,
-      updateExtras,
+      tableActions: {
+        updateUsers,
+        updateGroups,
+        updateExtras,
+        deleteRow,
+        editModal,
+      },
     },
   });
+
+  console.log(table.getFilteredSelectedRowModel().rows);
 
   return (
     <div className="space-y-4">

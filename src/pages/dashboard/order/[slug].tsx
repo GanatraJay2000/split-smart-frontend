@@ -1,9 +1,12 @@
-import { UserNav } from "@/components/user-nav";
-import { DataTable } from "@/components/DataTable/data-table";
-import { columns as specificOrderTable } from "@/components/DataTable/Columns/SpecificOrderTable";
-import { orders as ordersData } from "@/lib/data/orders";
 import { useEffect, useMemo, useState } from "react";
+
+import { orders as ordersData } from "@/lib/data/orders";
 import { groups, users } from "@/lib/data/users";
+
+import { columns as specificOrderTable } from "@/components/DataTable/Columns/SpecificOrderTable";
+import { DataTable } from "@/components/DataTable/data-table";
+import SpecificOrderModal from "@/components/DataTable/Modals/SpecificOrderModal";
+import { UserNav } from "@/components/user-nav";
 
 import {
   Table,
@@ -15,6 +18,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Row } from "@tanstack/react-table";
+import { Order as OrderSchema } from "@/lib/types/dataTable/schema";
 
 export default function Order() {
   const [order, setOrder] = useState(ordersData[0].items);
@@ -26,7 +32,7 @@ export default function Order() {
     return (
       Math.round(order.reduce((acc, item) => acc + item.cost, 0) * 1000) / 1000
     );
-  }, []);
+  }, [order]);
 
   const verify_cost = useMemo(() => {
     return shared?.reduce((acc, user) => acc + user.value, 0);
@@ -55,6 +61,68 @@ export default function Order() {
     }
   }, [order]);
 
+  const updateUsers = (rowIndex: number, users: number[]) => {
+    const gs = groups
+      .filter((g) => g.users.every((u) => users.includes(u)))
+      .map((g) => g.id);
+    setOrder((prev) => {
+      const newOrder = [...prev];
+      newOrder[rowIndex].users = users;
+      newOrder[rowIndex].groups = gs;
+      return newOrder;
+    });
+  };
+
+  const updateGroups = (rowIndex: number, _groups: number[]) => {
+    const set1 = new Set(
+      groups
+        .filter((g) => _groups.includes(g.id))
+        .reduce((acc: number[], g) => [...acc, ...g.users], [])
+    );
+    setOrder((prev) => {
+      const newOrder = [...prev];
+      newOrder[rowIndex].users = Array.from(set1);
+      newOrder[rowIndex].groups = _groups;
+      return newOrder;
+    });
+  };
+
+  const updateExtras = (rowIndex: number, extras: number[]) => {
+    setOrder((prev) => {
+      const newOrder = [...prev];
+      newOrder[rowIndex].extras = extras;
+      return newOrder;
+    });
+  };
+
+  const deleteRow = (rowIndex: number) => {
+    setOrder((prev) => {
+      const newOrder = [...prev];
+      newOrder.splice(rowIndex, 1);
+      return newOrder;
+    });
+  };
+
+  const editRow = (
+    rowIndex: number,
+    data: Partial<OrderSchema["items"][number]>
+  ) => {
+    setOrder((prev) => {
+      const newOrder = [...prev];
+      newOrder[rowIndex].name = data.name ?? newOrder[rowIndex].name;
+      newOrder[rowIndex].cost = data.cost ?? newOrder[rowIndex].cost;
+      return newOrder;
+    });
+  };
+
+  const onPublish = () => {
+    if (verify_cost?.toFixed(4) === total_cost?.toFixed(4)) {
+      alert("Published");
+    } else {
+      alert("Verify cost is not equal to total cost");
+    }
+  };
+
   return (
     <div className="h-full flex-1 flex-col space-y-8 p-8 flex md:w-11/12 mx-auto">
       <div className="flex items-center justify-between space-y-2">
@@ -69,50 +137,26 @@ export default function Order() {
         </div>
       </div>
       <div className="flex gap-10">
-        <div className="md:w-max">
+        <div className="grow">
           <DataTable
             data={order}
-            updateUsers={(rowIndex: number, users: number[]) => {
-              const gs = groups
-                .filter((g) => g.users.every((u) => users.includes(u)))
-                .map((g) => g.id);
-              setOrder((prev) => {
-                const newOrder = [...prev];
-                newOrder[rowIndex].users = users;
-                newOrder[rowIndex].groups = gs;
-                return newOrder;
-              });
-            }}
-            updateGroups={(rowIndex: number, _groups: number[]) => {
-              const set1 = new Set(
-                groups
-                  .filter((g) => _groups.includes(g.id))
-                  .reduce((acc: number[], g) => [...acc, ...g.users], [])
-              );
-              setOrder((prev) => {
-                const newOrder = [...prev];
-                newOrder[rowIndex].users = Array.from(set1);
-                newOrder[rowIndex].groups = _groups;
-                return newOrder;
-              });
-            }}
-            updateExtras={(rowIndex: number, extras: number[]) => {
-              console.log(extras);
-              setOrder((prev) => {
-                const newOrder = [...prev];
-                newOrder[rowIndex].extras = extras;
-                return newOrder;
-              });
-            }}
             columns={specificOrderTable}
             options={{
               searchCol: "name",
               pagination: true,
             }}
+            tableAcitons={{
+              updateUsers,
+              updateGroups,
+              updateExtras,
+              deleteRow,
+              editModal: (row: Row<OrderSchema["items"][number]>) =>
+                SpecificOrderModal({ row, editRow }),
+            }}
           />
         </div>
         <div className="mt-10">
-          <div className="bg-white rounded-lg border p-4 s">
+          <div className="bg-white rounded-lg border p-3 s">
             <Table className="w-max">
               <TableCaption>User based Cost.</TableCaption>
               <TableHeader>
@@ -149,6 +193,13 @@ export default function Order() {
           </div>
         </div>
       </div>
+      <Button
+        variant="outline"
+        onClick={onPublish}
+        className="border-dashed border-2 w-max px-10 py-1 hover:border-solid"
+      >
+        Publish
+      </Button>
     </div>
   );
 }
