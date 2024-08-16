@@ -6,7 +6,7 @@ export const groups: Array<{
   {
     id: 1,
     name: "Common",
-    users: [1, 2, 3, 4, 5, 6, 7, 8],
+    users: [1, 2, 3, 4, 5, 6, 7],
   },
   {
     id: 2,

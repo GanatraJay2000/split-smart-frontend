@@ -22,12 +22,24 @@ import { Button } from "@/components/ui/button";
 import { Row } from "@tanstack/react-table";
 import { Order as OrderSchema } from "@/lib/types/dataTable/schema";
 import Inner from "@/components/Inner";
+import { useRouter } from "next/router";
 
 export default function Order() {
-  const [order, setOrder] = useState(ordersData[0].items);
+  const router = useRouter();
+  const { slug } = router.query;
+  const [order, setOrder] = useState([] as OrderSchema["items"]);
   const [shared, setShared] = useState<
     undefined | Array<{ user: number; value: number }>
   >(undefined);
+
+  useEffect(() => {
+    if (slug) {
+      const order = ordersData.find((o) => o.id === Number(slug));
+      if (order) {
+        setOrder(order.items);
+      }
+    }
+  }, [slug]);
 
   const total_cost = useMemo(() => {
     return (
